@@ -6,19 +6,31 @@ document.addEventListener('DOMContentLoaded', function() {
         return regex.test(str);
     }
 
-    async function getGender(name) {
-        const url = `https://api.genderize.io?name=${name}`;
+    async function getPrediction(url, type) {
+
         try {
-            const response = await fetch(url);                        /*What values get stored in here and the next line?*/
-            const gender = await response.json();
-            return gender;
+            /*API call*/
+            const response = await fetch(url); 
+            
+            /*Parses response from JSON to JS*/
+            const data = await response.json();
+
+            if (type=="gender"){
+                return data.gender;
+            }
+
+            if (type=="age"){
+                return data.age;
+            }
+            
+        /*Displays error if there was an error fetching the data*/
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     }
 
     /*Handles "Predict my info" button*/
-    document.getElementById('predictBtn').addEventListener('click', function(e){
+    document.getElementById('predictBtn').addEventListener('click', async function(e){
 
         e.preventDefault();
         let nameInput = document.getElementById('nameInput').value;
@@ -34,11 +46,15 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('A name cannot contain a digit.');
             return;
         }
-    
-        console.log("Name: ",nameInput);
 
-        const gender = getGender(nameInput);
+        /*Gets predictions from APIs*/
+        const gender = await getPrediction(`https://api.genderize.io?name=${nameInput}`,"gender");
+        const age = await getPrediction(`https://api.agify.io?name=${nameInput}`,"age");
+  
+        /*Prints gender in "genderResult" paragraph*/
+        document.getElementById('genderResult').innerHTML = `<strong>Gender:</strong> ${gender}`;
 
-
+        /*Prints age in "ageResult" paragraph*/
+        document.getElementById('ageResult').innerHTML = `<strong>Age:</strong> ${age}`;
     });
 });
